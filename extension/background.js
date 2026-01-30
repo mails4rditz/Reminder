@@ -1,3 +1,7 @@
+// Open the hosted web app when notifications are clicked.
+// Set `APP_URL` to your GitHub Pages URL after you enable Pages for the repo.
+const APP_URL = 'https://mails4rditz.github.io/Reminder/';
+
 // Set up daily alarm at 9 AM
 chrome.runtime.onInstalled.addListener(() => {
     chrome.alarms.create('dailyReminder', {
@@ -28,14 +32,14 @@ function showReminderNotification() {
 // Handle notification click
 chrome.notifications.onButtonClicked.addListener((notificationId, buttonIndex) => {
     if (notificationId === 'reminder' && buttonIndex === 0) {
-        // Open the web app
-        chrome.tabs.create({ url: chrome.runtime.getURL('../index.html') });
+        // Open the hosted web app
+        chrome.tabs.create({ url: APP_URL });
     }
 });
 
 chrome.notifications.onClicked.addListener((notificationId) => {
     if (notificationId === 'reminder') {
-        chrome.tabs.create({ url: chrome.runtime.getURL('../index.html') });
+        chrome.tabs.create({ url: APP_URL });
     }
 });
 
