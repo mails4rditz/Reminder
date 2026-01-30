@@ -1,6 +1,8 @@
-// Open the hosted web app when notifications are clicked.
-// Set `APP_URL` to your GitHub Pages URL after you enable Pages for the repo.
-const APP_URL = 'https://mails4rditz.github.io/Reminder/';
+// Open the bundled app page when notifications are clicked.
+// Use the extension's internal app page so the extension is self-contained.
+const APP_URL = chrome.runtime && chrome.runtime.getURL
+    ? chrome.runtime.getURL('app.html')
+    : 'app.html';
 
 // Set up daily alarm at 9 AM
 chrome.runtime.onInstalled.addListener(() => {
@@ -21,7 +23,7 @@ chrome.alarms.onAlarm.addListener((alarm) => {
 function showReminderNotification() {
     chrome.notifications.create('reminder', {
         type: 'basic',
-        iconUrl: 'icon128.png',
+        iconUrl: chrome.runtime && chrome.runtime.getURL ? chrome.runtime.getURL('icon128.png') : 'icon128.png',
         title: 'Home Maintenance Reminder',
         message: 'Time to check your home maintenance tasks!',
         buttons: [{ title: 'Open App' }],

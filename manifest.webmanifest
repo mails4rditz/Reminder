@@ -1,0 +1,9 @@
+{
+    "name": "Home Maintenance Tracker",
+    "short_name": "HomeMaint",
+    "description": "Track your home maintenance tasks",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#f4f4f4",
+    "theme_color": "#4CAF50"
+}

@@ -1,9 +1,23 @@
 {
-    "name": "Home Maintenance Tracker",
-    "short_name": "HomeMaint",
-    "description": "Track your home maintenance tasks",
-    "start_url": "/",
-    "display": "standalone",
-    "background_color": "#f4f4f4",
-    "theme_color": "#4CAF50"
+    "manifest_version": 3,
+    "name": "Home Maintenance Reminder",
+    "version": "1.0",
+    "description": "Daily reminders for home maintenance tasks",
+    "permissions": [
+        "alarms",
+        "notifications",
+        "storage"
+    ],
+    "background": {
+        "service_worker": "extension/background.js"
+    },
+    "action": {
+        "default_popup": "extension/popup.html",
+        "default_title": "Home Maintenance"
+    },
+    "icons": {
+        "16": "extension/icon16.png",
+        "48": "extension/icon48.png",
+        "128": "extension/icon128.png"
+    }
 }
