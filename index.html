@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home Maintenance Tracker</title>
+    <link rel="manifest" href="manifest.json">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        header {
+            background-color: #4CAF50;
+            color: white;
+            text-align: center;
+            padding: 1rem;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+        .category {
+            margin-bottom: 2rem;
+        }
+        .category h2 {
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 0.5rem;
+        }
+        .task {
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .task.overdue {
+            border-color: #f44336;
+            background-color: #ffebee;
+        }
+        .task.due-today {
+            border-color: #ff9800;
+            background-color: #fff3e0;
+        }
+        .task-details {
+            flex: 1;
+        }
+        .task-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        button {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .done-btn {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .snooze-btn {
+            background-color: #ff9800;
+            color: white;
+        }
+        .delete-btn {
+            background-color: #f44336;
+            color: white;
+        }
+        .add-task {
+            margin-top: 2rem;
+            padding: 1rem;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .add-task input, .add-task select, .add-task textarea {
+            width: 100%;
+            margin-bottom: 0.5rem;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+        .add-task button {
+            background-color: #2196F3;
+            color: white;
+        }
+        @media (max-width: 600px) {
+            .task {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .task-actions {
+                margin-top: 1rem;
+                width: 100%;
+                justify-content: space-between;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Home Maintenance Tracker</h1>
+    </header>
+    <div class="container">
+        <div id="tasks-container"></div>
+        <div class="add-task">
+            <h3>Add Personal Task</h3>
+            <input type="text" id="task-name" placeholder="Task Name" required>
+            <select id="task-frequency">
+                <option value="monthly">Monthly</option>
+                <option value="quarterly">Quarterly</option>
+                <option value="annual">Annual</option>
+            </select>
+            <textarea id="task-description" placeholder="Description"></textarea>
+            <button onclick="addTask()">Add Task</button>
+        </div>
+    </div>
+    <script>
+        // Preloaded tasks (simulated from PDF)
+        const preloadedTasks = [
+            { id: 1, name: "Inspect kitchen vent hood filter", frequency: "monthly", category: "monthly", description: "If filter has grease buildup, warping, corrosion, holes, or is hard to remove, replace it." },
+            { id: 2, name: "Check smoke and CO detectors", frequency: "monthly", category: "monthly", description: "Test all detectors and replace batteries if needed." },
+            { id: 3, name: "Clean dryer vent", frequency: "quarterly", category: "quarterly", description: "Remove lint buildup to prevent fire hazards." },
+            { id: 4, name: "Check for leaks", frequency: "spring", category: "spring", description: "Inspect plumbing for leaks after winter." },
+            { id: 5, name: "Clean gutters", frequency: "fall", category: "fall", description: "Remove leaves and debris from gutters." },
+            { id: 6, name: "Service HVAC system", frequency: "annual", category: "annual", description: "Annual maintenance for heating and cooling." },
+            // Add more tasks as needed
+        ];
+
+        let tasks = [];
+
+        function loadTasks() {
+            const stored = localStorage.getItem('homeTasks');
+            if (stored) {
+                tasks = JSON.parse(stored);
+            } else {
+                // Preload tasks
+                const now = new Date();
+                tasks = preloadedTasks.map(task => ({
+                    ...task,
+                    lastDone: null,
+                    nextDue: calculateNextDue(task.frequency, null),
+                    fromPDF: true
+                }));
+                saveTasks();
+            }
+        }
+
+        function saveTasks() {
+            localStorage.setItem('homeTasks', JSON.stringify(tasks));
+        }
+
+        function calculateNextDue(frequency, lastDone) {
+            const now = new Date();
+            let next = new Date(now);
+            if (!lastDone) {
+                // First time, set based on frequency
+                switch (frequency) {
+                    case 'monthly':
+                        next.setMonth(now.getMonth() + 1);
+                        break;
+                    case 'quarterly':
+                        next.setMonth(now.getMonth() + 3);
+                        break;
+                    case 'annual':
+                        next.setFullYear(now.getFullYear() + 1);
+                        break;
+                    case 'spring':
+                        next = getNextSeasonDate('spring');
+                        break;
+                    case 'summer':
+                        next = getNextSeasonDate('summer');
+                        break;
+                    case 'fall':
+                        next = getNextSeasonDate('fall');
+                        break;
+                    case 'winter':
+                        next = getNextSeasonDate('winter');
+                        break;
+                }
+            } else {
+                const last = new Date(lastDone);
+                switch (frequency) {
+                    case 'monthly':
+                        last.setMonth(last.getMonth() + 1);
+                        next = last;
+                        break;
+                    case 'quarterly':
+                        last.setMonth(last.getMonth() + 3);
+                        next = last;
+                        break;
+                    case 'annual':
+                        last.setFullYear(last.getFullYear() + 1);
+                        next = last;
+                        break;
+                    case 'spring':
+                    case 'summer':
+                    case 'fall':
+                    case 'winter':
+                        next = getNextSeasonDate(frequency);
+                        break;
+                }
+            }
+            return next.toISOString().split('T')[0];
+        }
+
+        function getNextSeasonDate(season) {
+            const now = new Date();
+            const year = now.getFullYear();
+            const seasons = {
+                spring: new Date(year, 2, 21), // March 21
+                summer: new Date(year, 5, 21), // June 21
+                fall: new Date(year, 8, 23), // September 23
+                winter: new Date(year, 11, 21) // December 21
+            };
+            let next = seasons[season];
+            if (next < now) {
+                next.setFullYear(year + 1);
+            }
+            return next;
+        }
+
+        function renderTasks() {
+            const container = document.getElementById('tasks-container');
+            container.innerHTML = '';
+
+            const categories = ['monthly', 'quarterly', 'spring', 'summer', 'fall', 'winter', 'annual'];
+            categories.forEach(cat => {
+                const catTasks = tasks.filter(t => t.category === cat);
+                if (catTasks.length > 0) {
+                    const catDiv = document.createElement('div');
+                    catDiv.className = 'category';
+                    catDiv.innerHTML = `<h2>${cat.charAt(0).toUpperCase() + cat.slice(1)} Tasks</h2>`;
+                    catTasks.forEach(task => {
+                        const taskDiv = document.createElement('div');
+                        taskDiv.className = 'task';
+                        const today = new Date().toISOString().split('T')[0];
+                        if (task.nextDue < today) {
+                            taskDiv.classList.add('overdue');
+                        } else if (task.nextDue === today) {
+                            taskDiv.classList.add('due-today');
+                        }
+                        taskDiv.innerHTML = `
+                            <div class="task-details">
+                                <h3>${task.name}</h3>
+                                <p>${task.description}</p>
+                                <p>Next Due: ${task.nextDue}</p>
+                            </div>
+                            <div class="task-actions">
+                                <button class="done-btn" onclick="markDone(${task.id})">Done</button>
+                                <button class="snooze-btn" onclick="snooze(${task.id})">Snooze 24h</button>
+                                ${!task.fromPDF ? '<button class="delete-btn" onclick="deleteTask('+task.id+')">Delete</button>' : ''}
+                            </div>
+                        `;
+                        catDiv.appendChild(taskDiv);
+                    });
+                    container.appendChild(catDiv);
+                }
+            });
+        }
+
+        function markDone(id) {
+            const task = tasks.find(t => t.id === id);
+            if (task) {
+                task.lastDone = new Date().toISOString().split('T')[0];
+                task.nextDue = calculateNextDue(task.frequency, task.lastDone);
+                saveTasks();
+                renderTasks();
+            }
+        }
+
+        function snooze(id) {
+            const task = tasks.find(t => t.id === id);
+            if (task) {
+                const next = new Date(task.nextDue);
+                next.setDate(next.getDate() + 1);
+                task.nextDue = next.toISOString().split('T')[0];
+                saveTasks();
+                renderTasks();
+            }
+        }
+
+        function deleteTask(id) {
+            tasks = tasks.filter(t => t.id !== id);
+            saveTasks();
+            renderTasks();
+        }
+
+        function addTask() {
+            const name = document.getElementById('task-name').value;
+            const frequency = document.getElementById('task-frequency').value;
+            const description = document.getElementById('task-description').value;
+            if (name) {
+                const newTask = {
+                    id: Date.now(),
+                    name,
+                    frequency,
+                    category: frequency,
+                    description,
+                    lastDone: null,
+                    nextDue: calculateNextDue(frequency, null),
+                    fromPDF: false
+                };
+                tasks.push(newTask);
+                saveTasks();
+                renderTasks();
+                document.getElementById('task-name').value = '';
+                document.getElementById('task-description').value = '';
+            }
+        }
+
+        function requestNotificationPermission() {
+            if ('Notification' in window) {
+                Notification.requestPermission().then(permission => {
+                    if (permission === 'granted') {
+                        checkNotifications();
+                    }
+                });
+            }
+        }
+
+        function checkNotifications() {
+            const today = new Date().toISOString().split('T')[0];
+            const dueTasks = tasks.filter(t => t.nextDue === today);
+            if (dueTasks.length > 0) {
+                const taskNames = dueTasks.map(t => t.name).join(', ');
+                new Notification('Home Maintenance Due Today', {
+                    body: `Tasks: ${taskNames}`
+                });
+            }
+        }
+
+        // Register service worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js');
+        }
+
+        // Load and render
+        loadTasks();
+        renderTasks();
+        requestNotificationPermission();
+    </script>
+</body>
+</html>
