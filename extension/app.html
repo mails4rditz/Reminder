@@ -14,7 +14,10 @@
     <h1>Home Maintenance</h1>
     <p>This is the bundled app page for the extension. Replace with your app content.</p>
     <p><strong>Note:</strong> Content scripts cannot be injected into special pages (chrome://, internal pages, PDFs opened in viewer). To test the ping, open a regular website (http/https) tab and then click the button below.</p>
-    <button id="testPing">Ping content script on active tab</button>
+    <div style="margin-bottom:8px">
+      <button id="testPing">Ping content script on active tab</button>
+      <button id="openTestPageBtn">Open Test Page & Ping</button>
+    </div>
     <div id="result"></div>
 
     <script src="app.js"></script>
