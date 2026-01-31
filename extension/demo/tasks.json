@@ -1,0 +1,22 @@
+[
+  {
+    "id": "task-1",
+    "title": "Change HVAC filter",
+    "dueDate": "2026-02-05",
+    "recurrence": "monthly",
+    "notes": "Replace the main filter and check system airflow."
+  },
+  {
+    "id": "task-2",
+    "title": "Test smoke detectors",
+    "dueDate": "2026-03-10",
+    "recurrence": "yearly",
+    "notes": "Replace batteries if needed and test chirp."
+  },
+  {
+    "id": "task-3",
+    "title": "Inspect roof",
+    "dueDate": "2026-06-01",
+    "notes": "Look for missing shingles and check flashing."
+  }
+]
