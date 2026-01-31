@@ -1,0 +1,17 @@
+name: Smoke tests
+
+on:
+  push: {}
+  pull_request: {}
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - name: Run remote JSON smoke test
+        run: node tests/smoke/test_remote_import.js

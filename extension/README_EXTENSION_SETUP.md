@@ -54,6 +54,16 @@ A sample `tasks.json` is included at `extension/demo/tasks.json` for quick testi
 
 Use this URL in the extension `Options` → Remote URL, then click **Fetch now** or enable auto-sync to test the remote import flow.
 
+CI smoke test
+-------------
+A smoke test is included that fetches the demo URL and validates the JSON schema (title and parseable `dueDate`). The test runs on push and pull requests via GitHub Actions. You can run it locally with:
+
+```bash
+node tests/smoke/test_remote_import.js
+```
+
+To test a different URL locally, set the `REMOTE_URL` environment variable before running the script.
+
 Notes on PDF remote sources
 ---------------------------
 - You can also point the remote URL to a PDF file; for automatic parsing the extension requires `pdf.js` to be present in `extension/libs/pdfjs/` (see the README section about adding `pdf.js`).
